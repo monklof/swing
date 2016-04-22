@@ -1,24 +1,24 @@
 import os
 
 # store all the configurations found
-configurations = {}
+_configurations = {}
 # the enviroment varaible used to specify which config to use
-env_name = "APP_ENV"
+_env_name = "APP_ENV"
+_default_confname = "default"
 
 class metacls(type):
     '''meta class for listening the config class's definition'''
     def __new__(mcs, name, bases, dict):
-        the_class =  type.__new__(mcs, name, bases, dict)
-
         # jump it when if it is the Base `ConfigBase` class
         if dict.get("__is_base_confclass__"):
-            return the_class
-        # set confname to "default" when not set
+            return type.__new__(mcs, name, bases, dict)
+        # set confname to _default_confname when not set
         if not dict.get("__confname__"):
-            dict["__confname__"] = "default"
-        global configurations
+            dict["__confname__"] = _default_confname
+        the_class = type.__new__(mcs, name, bases, dict)
+        global _configurations
 
-        configurations[dict["__confname__"]] = the_class
+        _configurations[dict["__confname__"]] = the_class
         refresh_config()
         return the_class
 
@@ -41,11 +41,11 @@ class ClassProxy(object):
             return getattr(self, name)
         else:
             if self.cls is _DefaultConfig:
-                raise LookupError("no configuration found (tips: have you once imported the configuration file? )")
+                raise LookupError("configuration<%s> not found" % _env_confname())
             try:
                 return getattr(self.cls, name)
             except AttributeError as e:
-                raise AttributeError("the '%s' configuration does has no config named '%s'" % (
+                raise AttributeError("the configuration<%s> does has no attribute named '%s'" % (
                     self.cls.__confname__, name))
 
     def __setattr__(self, name, value):
@@ -56,7 +56,7 @@ class ClassProxy(object):
 
 
 class _DefaultConfig(object):
-    __confname__ = "default"
+    __confname__ = _default_confname
 
 def default_config():
     return ClassProxy(_DefaultConfig)
@@ -68,26 +68,30 @@ def set_env_var(env_var):
     swing will use the env value of `env_var` to figure out
     which configuration should be used
     '''
-    global env_name
-    env_name = env_var
+    global _env_name
+    _env_name = env_var
 
 def get_env_var():
-    return env_name
+    return _env_name
 
 def switch_config(confname):
-    if confname not in configurations:
+    if confname not in _configurations:
         raise ValueError("configuration: %s not found" % confname)
     global config
-    config.set_class(configurations[confname])
+    config.set_class(_configurations[confname])
 
 def refresh_config():
-    confname = os.environ.get(env_name, "default")
-    if confname in configurations:
+    confname = _env_confname()
+    if confname in _configurations:
         switch_config(confname)
     
 def clear_config():
     '''clear all configurations and reset the current config'''
-    global configurations
+    global _configurations
     global config
-    configurations.clear()
+    _configurations.clear()
     config.set_class(_DefaultConfig)
+
+
+def _env_confname():
+    return os.environ.get(_env_name, _default_confname)

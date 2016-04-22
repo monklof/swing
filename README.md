@@ -64,15 +64,15 @@ that's swing :)
 
 ### General
 
-You have to subclass the class `swing.ConfigBase` to declare a configuration, and the configuration's name can be defined through the class's  `__confname__` attribute. If you do not set the `__confname__`, Swing will take the configuarion as the default configuration.
+You have to subclass the class `ConfigBase` to declare a configuration, and the configuration's name can be defined through the class's  `__confname__` attribute. If you do not set the `__confname__`, Swing will take the configuarion as the default configuration.
 
-Then you can control which configuration to use through the *Enviroment Variable*, and access the attributes of the configuration through `swing.config`
+Then you can control which configuration to use through the *Enviroment Variable*, and access the attributes of the configuration through `config`
 
 ### The Enviroment Variable
 
-By default, the *Environment Variable* Swing used to control which configuration to use is `APP_ENV`. You can change it through `swing.set_env_var(the_new_enviroment_var)`.
+By default, the *Environment Variable* Swing used to control which configuration to use is `APP_ENV`. You can change it through `set_env_var(the_new_enviroment_var)`.
 
-`swing.get_env_var()` to get current *Enviroment Variable*
+`get_env_var()` to get current *Enviroment Variable*
 
 ### Common Configurations
 
@@ -101,9 +101,11 @@ class ProductionConfig(CommonConfig):
 
 ## API
 
+All the api available throgh `swing.API`
+
 ### ConfigBase
 
-```class swing.ConfigBase```
+```class ConfigBase```
 > The super class used to define a configuration
 
 >  - `__confname__` - the configuration name, "default" if not declared
@@ -111,7 +113,7 @@ class ProductionConfig(CommonConfig):
 ### config
 
 ```python
-swing.config
+config
 ```
 > This object points to the current configuration, you can access to the configuraton by accessing the object's attribute
 
